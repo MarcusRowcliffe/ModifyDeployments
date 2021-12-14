@@ -1,6 +1,6 @@
 library(shiny)
 require(devtools)
-source_url("https://raw.githubusercontent.com/MarcusRowcliffe/CTtracking/master/CTtracking.r")
+source_url("https://raw.githubusercontent.com/MarcusRowcliffe/CTtracking/V0.4.0/CTtracking.r")
 
 ui <- fluidPage(
   sidebarLayout(
@@ -13,12 +13,12 @@ ui <- fluidPage(
       uiOutput("b2"),
       uiOutput("b3"),
       uiOutput("b4"),
+      uiOutput("b5"),
       uiOutput("re"),
       tags$hr(),
       fluidRow(
         column(5, actionButton("save", "Save model")),
-        column(5, downloadButton("deployment_models.rds", "Download models"))),
-      textOutput("txt")
+        column(5, downloadButton("deployment_models.rds", "Download models")))
     ),
     mainPanel(
       tags$hr(),
@@ -74,29 +74,36 @@ server <- function(input, output, session) {
   output$b1 <- renderUI({
     b <- round(cfs()[1], 2)
     fluidRow(
-      column(9, sliderInput("b1", "Parameter 1", 0.5*b, 1.5*b, b)),
+      column(9, sliderInput("b1", "Contour spacing", 0, 2*b, b, b/100)),
       column(2, actionButton("re1", "Reset")))
   })
   
   output$b2 <- renderUI({
-    b <- round(cfs()[2], 2)
+    b <- round(1 - cfs()[2]^(1/cfs()[5]), 2)
     fluidRow(
-      column(9, sliderInput("b2", "Parameter 2", 0.5*b, 1.5*b, b)),
+      column(9, sliderInput("b2", "Horizon at image centre", b-0.5, b+0.5, b, 0.01)),
       column(2, actionButton("re2", "Reset")))
   })
   
   output$b3 <- renderUI({
     b <- round(cfs()[3], 2)
     fluidRow(
-      column(9, sliderInput("b3", "Parameter 3", b-0.5, b+0.5, b)),
+      column(9, sliderInput("b3", "Contour slope", b-1, b+1, b, 0.01)),
       column(2, actionButton("re3", "Reset")))
   })
   
   output$b4 <- renderUI({
     b <- round(cfs()[4], 2)
     fluidRow(
-      column(9, sliderInput("b4", "Parameter 4", 0.5*b, 1.5*b, b)),
+      column(9, sliderInput("b4", "Contour spacing trend", b-1, b+1, b, 0.01)),
       column(2, actionButton("re4", "Reset")))
+  })
+  
+  output$b5 <- renderUI({
+    b <- round(cfs()[5], 2)
+    fluidRow(
+      column(9, sliderInput("b5", "Contour curvature", b-1, b+1, b, 0.01)),
+      column(2, actionButton("re5", "Reset")))
   })
   
   output$re <- renderUI({
@@ -111,7 +118,7 @@ server <- function(input, output, session) {
   })
   
   observeEvent(input$re2, {
-    updateSliderInput(session, "b2", value=cfs()[2])
+    updateSliderInput(session, "b2", value=1 - cfs()[2]^(1/cfs()[5]))
   })
   
   observeEvent(input$re3, {
@@ -122,11 +129,16 @@ server <- function(input, output, session) {
     updateSliderInput(session, "b4", value=cfs()[4])
   })
   
+  observeEvent(input$re5, {
+    updateSliderInput(session, "b5", value=cfs()[5])
+  })
+  
   observeEvent(input$reset, {
     updateSliderInput(session, "b1", value=cfs()[1])
-    updateSliderInput(session, "b2", value=cfs()[2])
+    updateSliderInput(session, "b2", value=1 - cfs()[2]^(1/cfs()[5]))
     updateSliderInput(session, "b3", value=cfs()[3])
     updateSliderInput(session, "b4", value=cfs()[4])
+    updateSliderInput(session, "b5", value=cfs()[5])
   })
   
   observeEvent(input$restore, {
@@ -137,13 +149,13 @@ server <- function(input, output, session) {
   
   # Dynamic coefficients vector
   coefs <- reactive({
-    c(input$b1, input$b2, input$b3, input$b4)
+    c(b1=input$b1, b2=(1-input$b2)^input$b5, b3=input$b3, b4=input$b4, b5=input$b5)
   })
   
   # Render image
   output$image <- renderPlot({
-    req(dat(), coefs())
-    plot_deployment_image(dat(), coefs(), img$i)
+    req(coefs())
+    plot_deployment_image(mod(), coefs(), img$i)
   }, width=1000, height=1000)
   
   # Save and download models
