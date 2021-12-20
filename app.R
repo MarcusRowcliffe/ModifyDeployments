@@ -74,37 +74,37 @@ server <- function(input, output, session) {
   
   # Set up parameter value sliders and reset buttons
   output$b1 <- renderUI({
-    b <- round(cfs()[1], 2)
+    b <- round(1 - cfs()[1]^(1/cfs()[5]), 2)
     fluidRow(
-      column(9, sliderInput("b1", "Contour spacing", 0, 2*b, b, b/100)),
+      column(9, sliderInput("b1", "Horizon at image centre (0=base, 1=top)", b-0.5, b+0.5, b, 0.01)),
       column(2, actionButton("re1", "Reset")))
   })
   
   output$b2 <- renderUI({
-    b <- round(1 - cfs()[2]^(1/cfs()[5]), 2)
+    b <- round(cfs()[2], 2)
     fluidRow(
-      column(9, sliderInput("b2", "Horizon at image centre", b-0.5, b+0.5, b, 0.01)),
+      column(9, sliderInput("b2", "Contour spacing", 0, 2*b, b, b/100)),
       column(2, actionButton("re2", "Reset")))
   })
   
   output$b3 <- renderUI({
     b <- round(cfs()[3], 2)
     fluidRow(
-      column(9, sliderInput("b3", "Contour slope", b-1, b+1, b, 0.01)),
+      column(9, sliderInput("b3", "Horizon slope", b-1, b+1, b, 0.01)),
       column(2, actionButton("re3", "Reset")))
   })
   
   output$b4 <- renderUI({
     b <- round(cfs()[4], 2)
     fluidRow(
-      column(9, sliderInput("b4", "Contour spacing trend", b-1, b+1, b, 0.01)),
+      column(9, sliderInput("b4", "Contour spacing slope", b-1, b+1, b, 0.01)),
       column(2, actionButton("re4", "Reset")))
   })
   
   output$b5 <- renderUI({
     b <- round(cfs()[5], 2)
     fluidRow(
-      column(9, sliderInput("b5", "Contour curvature", b-1, b+1, b, 0.01)),
+      column(9, sliderInput("b5", "Contour spacing evenness", b-1, b+1, b, 0.01)),
       column(2, actionButton("re5", "Reset")))
   })
   
@@ -116,11 +116,11 @@ server <- function(input, output, session) {
   
   # Reset / restore parameter slider values
   observeEvent(input$re1, {
-    updateSliderInput(session, "b1", value=cfs()[1])
+    updateSliderInput(session, "b1", value=1 - cfs()[1]^(1/cfs()[5]))
   })
   
   observeEvent(input$re2, {
-    updateSliderInput(session, "b2", value=1 - cfs()[2]^(1/cfs()[5]))
+    updateSliderInput(session, "b2", value=cfs()[2])
   })
   
   observeEvent(input$re3, {
@@ -136,8 +136,8 @@ server <- function(input, output, session) {
   })
   
   observeEvent(input$reset, {
-    updateSliderInput(session, "b1", value=cfs()[1])
-    updateSliderInput(session, "b2", value=1 - cfs()[2]^(1/cfs()[5]))
+    updateSliderInput(session, "b1", value=1 - cfs()[1]^(1/cfs()[5]))
+    updateSliderInput(session, "b2", value=cfs()[2])
     updateSliderInput(session, "b3", value=cfs()[3])
     updateSliderInput(session, "b4", value=cfs()[4])
     updateSliderInput(session, "b5", value=cfs()[5])
@@ -151,7 +151,7 @@ server <- function(input, output, session) {
   
   # Dynamic coefficients vector
   coefs <- reactive({
-    c(b1=input$b1, b2=(1-input$b2)^input$b5, b3=input$b3, b4=input$b4, b5=input$b5)
+    c(b1=(1-input$b1)^input$b5, b2=input$b2, b3=input$b3, b4=input$b4, b5=input$b5)
   })
   
   # Render image
@@ -169,7 +169,7 @@ server <- function(input, output, session) {
   
   output$deployment_models.rds <- downloadHandler(
     filename = function() {
-      "deployment_models.rds"
+      "modifieed_deployment_models.rds"
     },
     content = function(file) {
       saveRDS(dmods(), file)
@@ -177,4 +177,4 @@ server <- function(input, output, session) {
   )
 }
 
-#shinyApp(ui, server)
+shinyApp(ui, server)
