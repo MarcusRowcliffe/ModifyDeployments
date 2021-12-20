@@ -88,21 +88,21 @@ server <- function(input, output, session) {
   })
   
   output$b3 <- renderUI({
-    b <- round(cfs()[3], 2)
+    b <- round(cfs()["b3"], 2)
     fluidRow(
       column(9, sliderInput("b3", "Horizon slope", b-1, b+1, b, 0.01)),
       column(2, actionButton("re3", "Reset")))
   })
   
   output$b4 <- renderUI({
-    b <- round(cfs()[4], 2)
+    b <- round(cfs()["b4"], 2)
     fluidRow(
       column(9, sliderInput("b4", "Contour spacing slope", b-1, b+1, b, 0.01)),
       column(2, actionButton("re4", "Reset")))
   })
   
   output$b5 <- renderUI({
-    b <- round(cfs()[5], 2)
+    b <- round(cfs()["b5"], 2)
     fluidRow(
       column(9, sliderInput("b5", "Contour spacing evenness", b-1, b+1, b, 0.01)),
       column(2, actionButton("re5", "Reset")))
