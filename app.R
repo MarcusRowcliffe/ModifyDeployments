@@ -31,6 +31,8 @@ ui <- fluidPage(
 )
 
 server <- function(input, output, session) {
+  options(shiny.maxRequestSize=50*1024^2) 
+  
   # Image scroll buttons
   img <- reactiveValues(i=1)
   
