@@ -1,6 +1,5 @@
 library(shiny)
-require(devtools)
-source_url("https://raw.githubusercontent.com/MarcusRowcliffe/CTtracking/V0.4.0/CTtracking.r")
+devtools::source_url("https://raw.githubusercontent.com/MarcusRowcliffe/CTtracking/V0.4.0/CTtracking.r")
 
 ui <- fluidPage(
   sidebarLayout(
@@ -169,7 +168,7 @@ server <- function(input, output, session) {
   
   output$deployment_models.rds <- downloadHandler(
     filename = function() {
-      "modifieed_deployment_models.rds"
+      "modified_deployment_models.rds"
     },
     content = function(file) {
       saveRDS(dmods(), file)
@@ -178,3 +177,4 @@ server <- function(input, output, session) {
 }
 
 shinyApp(ui, server)
+
